@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Ejecutivo · Shopping del Siglo · Julio 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --rojo: #CC0000;
+    --rojo-suave: #FFF0F0;
+    --rojo-medio: #E53935;
+    --verde: #2E7D32;
+    --verde-suave: #F1F8E9;
+    --amarillo: #F9A825;
+    --amarillo-suave: #FFFDE7;
+    --azul: #1565C0;
+    --azul-suave: #E3F2FD;
+    --gris-oscuro: #1F1F1F;
+    --gris-medio: #666666;
+    --gris-claro: #F8F8F8;
+    --gris-borde: #E0E0E0;
+    --blanco: #FFFFFF;
+  }
+
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    background: #EFEFEF;
+    color: var(--gris-oscuro);
+    min-height: 100vh;
+  }
+
+  .looker-chrome { background: #1A1A2E; display: flex; align-items: center; padding: 0 16px; height: 48px; gap: 12px; }
+  .looker-logo { color: #4285F4; font-weight: 700; font-size: 14px; letter-spacing: -0.3px; }
+  .looker-title { color: #CCCCCC; font-size: 13px; flex: 1; }
+  .looker-actions { display: flex; gap: 8px; }
+  .looker-btn { background: rgba(255,255,255,0.1); border: none; color: #CCCCCC; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .looker-btn.primary { background: #4285F4; color: white; }
+
+  .page-tabs { background: #2C2C3E; display: flex; padding: 0 16px; gap: 2px; overflow-x: auto; }
+  .tab { padding: 8px 14px; font-size: 12px; color: #AAAAAA; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .tab:hover { color: #EEEEEE; }
+  .tab.active { color: white; border-bottom-color: #4285F4; background: rgba(66,133,244,0.1); }
+
+  .filter-bar { background: white; border-bottom: 1px solid var(--gris-borde); padding: 8px 24px; display: flex; align-items: center; gap: 16px; }
+  .filter-label { font-size: 11px; color: var(--gris-medio); }
+  .filter-chip { background: var(--azul-suave); color: var(--azul); border: 1px solid #90CAF9; border-radius: 16px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+
+  .canvas { padding: 24px; min-height: calc(100vh - 120px); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .portada { background: var(--rojo); border-radius: 8px; padding: 80px 60px; min-height: 600px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 16px; }
+  .portada-eyebrow { color: rgba(255,255,255,0.6); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .portada-title { color: white; font-size: 52px; font-weight: 700; line-height: 1.1; }
+  .portada-subtitle { color: rgba(255,255,255,0.85); font-size: 22px; font-weight: 300; }
+  .portada-meta { margin-top: 32px; color: rgba(255,255,255,0.5); font-size: 13px; }
+
+  .section-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-size: 20px; font-weight: 700; color: var(--gris-oscuro); }
+  .section-subtitle { font-size: 12px; color: var(--gris-medio); margin-top: 2px; }
+  .section-source { font-size: 11px; color: #AAAAAA; }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
+
+  .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-sm { padding: 16px; }
+
+  .scorecard { text-align: center; }
+  .scorecard-label { font-size: 11px; color: var(--gris-medio); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .scorecard-value { font-size: 44px; font-weight: 700; line-height: 1; color: var(--gris-oscuro); }
+  .scorecard-value.rojo { color: var(--rojo); }
+  .scorecard-value.verde { color: var(--verde); }
+  .scorecard-value.azul { color: var(--azul); }
+  .scorecard-sub { font-size: 12px; color: var(--gris-medio); margin-top: 6px; }
+  .scorecard-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 10px; margin-top: 4px; }
+  .delta-up { background: #E8F5E9; color: #2E7D32; }
+  .delta-down { background: #FFEBEE; color: #C62828; }
+  .delta-neutral { background: #F5F5F5; color: #666; }
+
+  .scorecard-sm { text-align: left; padding: 14px 16px; }
+  .scorecard-sm .scorecard-label { text-align: left; margin-bottom: 4px; }
+  .scorecard-sm .scorecard-value { font-size: 26px; }
+
+  .insight-box { border-radius: 8px; padding: 16px 20px; margin-top: 16px; border-left: 4px solid; }
+  .insight-eyebrow { display:flex; align-items:center; gap:6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+  .insight-box p { font-size: 13px; line-height: 1.65; margin: 0 0 8px; }
+  .insight-box p:last-child { margin-bottom: 0; }
+  .insight-box ul { margin: 0; padding-left: 18px; }
+  .insight-box li { font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
+  .insight-box li:last-child { margin-bottom: 0; }
+  .insight-box strong { font-weight: 700; }
+  .insight-box .aside { display:inline-block; margin-top:10px; font-size:11.5px; padding:4px 10px; border-radius:12px; background:rgba(255,255,255,0.6); }
+  .insight-rojo { background: var(--rojo-suave); border-color: var(--rojo); color: #7B1010; }
+  .insight-rojo .insight-eyebrow { color: var(--rojo); }
+  .insight-verde { background: var(--verde-suave); border-color: var(--verde); color: #1B5E20; }
+  .insight-verde .insight-eyebrow { color: var(--verde); }
+  .insight-azul { background: var(--azul-suave); border-color: var(--azul); color: #0D47A1; }
+  .insight-azul .insight-eyebrow { color: var(--azul); }
+  .insight-neutral { background: #F2F2F2; border-color: #888; color: #333; }
+  .insight-neutral .insight-eyebrow { color: #555; }
+
+  .bar-chart { padding: 8px 0; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+  .bar-label { font-size: 11px; color: var(--gris-medio); width: 150px; flex-shrink: 0; }
+  .bar-track { flex: 1; background: #F0F0F0; border-radius: 3px; height: 22px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; transition: width 0.6s ease; }
+  .bar-val { font-size: 11px; font-weight: 700; color: white; }
+  .bar-highlight { background: var(--rojo); }
+  .bar-normal { background: #90A4C8; }
+
+  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gris-borde); }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { font-size: 12px; color: var(--gris-medio); }
+  .metric-val { font-size: 16px; font-weight: 700; }
+
+  .estado-card { border-radius: 8px; padding: 20px; text-align: center; }
+  .estado-icon { font-size: 26px; margin-bottom: 8px; }
+  .estado-num { font-size: 34px; font-weight: 700; }
+  .estado-label { font-size: 11px; color: var(--gris-medio); margin-top: 4px; }
+  .estado-pct { font-size: 12px; font-weight: 600; margin-top: 2px; }
+
+  .podium { display: flex; gap: 12px; }
+  .podium-item { flex: 1; background: white; border-radius: 8px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-top: 3px solid; }
+  .podium-name { font-size: 13px; font-weight: 700; margin: 6px 0 4px; }
+  .podium-val { font-size: 20px; font-weight: 700; }
+  .podium-sub { font-size: 11px; color: var(--gris-medio); }
+
+  .valor-card { border-radius: 8px; padding: 20px; border-top: 3px solid; }
+  .valor-area { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .valor-text { font-size: 12px; color: var(--gris-medio); line-height: 1.6; }
+
+  .divider { height: 20px; }
+  .mt8 { margin-top: 8px; }
+  .mt16 { margin-top: 16px; }
+  .mt20 { margin-top: 20px; }
+
+  .ver-detalle { font-size: 11px; color: var(--azul); cursor: pointer; text-decoration: underline; margin-top: 10px; display: inline-block; background:none; border:none; padding:0; font-family: inherit; }
+  .ver-detalle:hover { color: #0D47A1; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: white; border-radius: 10px; max-width: 760px; width: 100%; max-height: 82vh; display:flex; flex-direction:column; }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--gris-borde); }
+  .modal-title { font-size: 15px; font-weight: 700; }
+  .modal-sub { font-size: 11px; color: var(--gris-medio); margin-top: 2px; }
+  .modal-close { cursor: pointer; font-size: 22px; color: #999; background: none; border: none; line-height: 1; }
+  .modal-body { padding: 16px 22px; overflow-y: auto; }
+  .modal-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .mf-btn { font-size: 11px; padding: 4px 11px; border-radius: 12px; border: 1px solid var(--gris-borde); background: white; cursor: pointer; color: var(--gris-medio); }
+  .mf-btn.active { background: var(--azul); color: white; border-color: var(--azul); }
+  .m-item { border-bottom: 1px solid var(--gris-borde); padding: 10px 0; }
+  .m-item:last-child { border-bottom: none; }
+  .m-item-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .m-item-text { font-size: 12px; color: var(--gris-medio); line-height: 1.5; }
+  .m-tag { font-size: 10px; padding: 1px 7px; border-radius: 8px; background: #EFEFEF; color: #555; margin-left: 4px; white-space:nowrap; }
+  .m-tag.pos { background:#E8F5E9; color:#2E7D32; }
+  .m-tag.neg { background:#FFEBEE; color:#C62828; }
+  .m-tag.neu { background:#FFF8E1; color:#8D6E00; }
+  .m-empty { font-size: 12px; color: var(--gris-medio); text-align: center; padding: 24px; }
+
+  .acc-wrap { border: 1px solid var(--gris-borde); border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+  .acc-head { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--gris-claro); border: none; cursor: pointer; text-align: left; font-size: 12px; font-weight: 700; }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+  .acc-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 14px; border-top: 1px solid var(--gris-borde); }
+  .sev-alta { background:#FFEBEE; color:#C62828; }
+  .sev-media { background:#FFF8E1; color:#8D6E00; }
+  .sev-baja { background:#E1F5EE; color:#0F6E56; }
+  .sev-resuelto { background:#EFEFEF; color:#666; }
+</style>
+<!-- Google Analytics (GA4) — Tablero Ejecutivo SDS -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z2ZYHK31SX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Z2ZYHK31SX');
+</script>
+</head>
+<body>
+
+<div class="looker-chrome">
+  <span class="looker-logo">Looker Studio</span>
+  <span class="looker-title">Dashboard Ejecutivo · Shopping del Siglo</span>
+  <div class="looker-actions">
+    <button class="looker-btn">Compartir</button>
+    <button class="looker-btn primary">Ver</button>
+  </div>
+</div>
+
+<div class="page-tabs">
+  <div class="tab active" onclick="showPage('portada', event)">Portada</div>
+  <div class="tab" onclick="showPage('voz', event)">Voz del Visitante</div>
+  <div class="tab" onclick="showPage('cx', event)">Experiencia del Cliente</div>
+  <div class="tab" onclick="showPage('digital', event)">Reputación Digital</div>
+  <div class="tab" onclick="showPage('trafico', event)">Tráfico</div>
+  <div class="tab" onclick="showPage('operaciones', event)">Operaciones</div>
+  <div class="tab" onclick="showPage('valor', event)">Valor por Área</div>
+</div>
+
+<div class="filter-bar">
+  <span class="filter-label">Período:</span>
+  <span class="filter-chip">Julio 2026</span>
+  <span class="filter-label">Fuente:</span>
+  <span class="filter-chip">Múltiples fuentes</span>
+</div>
+
+<div class="canvas">
+
+  <!-- PORTADA -->
+  <div class="page active" id="page-portada">
+    <div class="portada">
+      <div class="portada-title">Dashboard<br>Ejecutivo</div>
+      <div class="portada-subtitle">Shopping del Siglo · Julio 2026</div>
+      <div class="portada-meta">Customer Experience &amp; Relación con Locatarios</div>
+    </div>
+  </div>
+
+  <!-- VOZ DEL VISITANTE -->
+  <div class="page" id="page-voz">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Voz del visitante</div>
+        <div class="section-subtitle">140 reseñas Google (ene-jul, verificadas) · 190 comentarios encuesta CX · Sigui (WhatsApp)</div>
+      </div>
+      <div class="section-source">Fuentes: Google · Encuesta CX Q2 · Sigui</div>
+    </div>
+
+    <div class="grid-2-1">
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Temas — reseñas Google vs. encuesta CX</div>
+        <div class="bar-chart" id="bar-temas"></div>
+        <div class="insight-box insight-azul">
+          <div class="insight-eyebrow">💡 Lectura</div>
+          <p>Dos fuentes que se generan de forma independiente <strong>ordenan los temas igual</strong>: variedad primero, limpieza y mantenimiento después. Esa coincidencia es lo que da peso al orden — no depende de un solo canal, y orienta dónde una mejora tendría más eco perceptible.</p>
+          <p>Dentro de "variedad", el matiz <strong>"chico pero completo"</strong> (3 menciones) es la única categoría donde el tamaño del shopping se nombra junto al elogio, no como límite — un ángulo a considerar en el posicionamiento frente a competidores de mayor escala.</p>
+          <span class="aside">💡 Idea a explorar: ¿posicionamiento tipo "shopping boutique"?</span>
+        </div>
+        <button class="ver-detalle" onclick="openModal('modal-resenas')">Ver reseñas y comentarios por tema ↗</button>
+      </div>
+      <div class="card">
+        <div class="scorecard">
+          <div class="scorecard-label">Sentimiento (por calificación real)</div>
+          <div class="scorecard-value verde">88,6%</div>
+          <div class="scorecard-sub">positivo · 124 de 140 reseñas (4-5★)</div>
+        </div>
+        <div class="mt20" style="font-size:11px;color:var(--gris-medio);">11 neutro (3★) · 5 negativo (1-2★)</div>
+        <div class="divider"></div>
+        <div class="metric-row"><span class="metric-name">Evento 08/03 (taller)</span><span class="metric-val">14 reseñas / 1 día</span></div>
+        <div class="metric-row"><span class="metric-name">Protocolo de respuesta</span><span class="metric-val">100% desde jun.</span></div>
+        <div class="metric-row"><span class="metric-name">Tiempo resp. promedio</span><span class="metric-val">6,4 hs</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Sigui — asistente virtual WhatsApp (35 locales con información activa)</div>
+      <div class="grid-4">
+        <div class="scorecard-sm card-sm" style="background:var(--gris-claro);border-radius:8px;">
+          <div class="scorecard-label">Conversaciones julio</div>
+          <div class="scorecard-value" style="font-size:26px;">126</div>
+        </div>
+        <div class="scorecard-sm card-sm" style="background:var(--gris-claro);border-radius:8px;">
+          <div class="scorecard-label">Reclamos</div>
+          <div class="scorecard-value" style="font-size:26px;">10 <span style="font-size:13px;color:var(--gris-medio);">(7,9%)</span></div>
+        </div>
+        <div class="scorecard-sm card-sm" style="background:var(--gris-claro);border-radius:8px;">
+          <div class="scorecard-label">Consultas cine</div>
+          <div class="scorecard-value" style="font-size:26px;">10+</div>
+        </div>
+        <div class="scorecard-sm card-sm" style="background:var(--gris-claro);border-radius:8px;">
+          <div class="scorecard-label">Consultas promociones</div>
+          <div class="scorecard-value" style="font-size:26px;">15+</div>
+        </div>
+      </div>
+      <button class="ver-detalle" onclick="openModal('modal-sigui')">Ver detalle de reclamos ↗</button>
+    </div>
+  </div>
+
+  <!-- CX -->
+  <div class="page" id="page-cx">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Experiencia del cliente</div>
+        <div class="section-subtitle">Encuesta trimestral Q2 2026 (abr-jun) — sin nueva medición en julio</div>
+      </div>
+      <div class="section-source">Fuente: Encuesta CX</div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Cruce con julio</div>
+      <div class="grid-3">
+        <div class="metric-row" style="border:none;"><span class="metric-name">Reclamos Sigui (jul.)</span><span class="metric-val">10 / 126</span></div>
+        <div class="metric-row" style="border:none;"><span class="metric-name">Tema nuevo no visto en Q2</span><span class="metric-val">Objetos perdidos</span></div>
+        <div class="metric-row" style="border:none;"><span class="metric-name">Calificación real reseñas jul.</span><span class="metric-val">4,55★</span></div>
+      </div>
+      <div class="insight-box insight-azul">
+        <div class="insight-eyebrow">💡 Lectura</div>
+        <p>NPS y CSAT no tuvieron nueva medición en julio — la encuesta es trimestral y el dato de Q2 ya se presentó en el tablero de junio, sin cambios que reportar. El valor de esta página este mes está en cruzar ese resultado estable con el dato que sí llegó en julio: reseñas y reclamos.</p>
+        <p>La calificación real de las reseñas de julio (4,55★, sobre 47 reseñas con fecha y estrella verificadas) se ubica en línea con el nivel de CSAT de Q2 (4,65) — dos mediciones de naturaleza distinta (encuesta en el lugar, reseña pública) que no se contradicen.</p>
+        <p>Los 10 reclamos de Sigui en el mismo mes tampoco muestran un tema nuevo respecto a lo que ya señalaba la encuesta (baños, mantenimiento) — la única categoría que ningún instrumento anterior capturaba es "objetos perdidos".</p>
+        <p>Con la encuesta trimestral fija, el pulso mensual de julio se sostiene en reseñas y reclamos como termómetro intermedio. Ninguna de las dos fuentes anticipa un cambio de tendencia respecto a Q2; la próxima medición formal llega con la encuesta de Q3.</p>
+      </div>
+      <button class="ver-detalle" onclick="openModal('modal-encuesta')">Ver comentarios de la encuesta ↗</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="font-size:12px;color:var(--gris-medio);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Datos que se mantienen — Q2 2026</div>
+    <div class="grid-3">
+      <div class="card scorecard">
+        <div class="scorecard-label">NPS (Q2)</div>
+        <div class="scorecard-value azul">54</div>
+        <div class="scorecard-sub">316 respuestas</div>
+      </div>
+      <div class="card scorecard">
+        <div class="scorecard-label">CSAT global (Q2)</div>
+        <div class="scorecard-value verde">4,65</div>
+        <div class="scorecard-sub">sobre 5</div>
+      </div>
+      <div class="card scorecard">
+        <div class="scorecard-label">Perfil respondentes</div>
+        <div class="scorecard-value" style="font-size:26px;">67,5% mujer</div>
+        <div class="scorecard-sub">32,5% hombre</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">CSAT por dimensión (Q2)</div>
+      <div class="metric-row"><span class="metric-name">Ambiente</span><span class="metric-val">4,58</span></div>
+      <div class="metric-row"><span class="metric-name">Limpieza</span><span class="metric-val">4,62</span></div>
+      <div class="metric-row"><span class="metric-name">Seguridad</span><span class="metric-val">4,78</span></div>
+      <div class="metric-row"><span class="metric-name">Atención</span><span class="metric-val">4,61</span></div>
+    </div>
+  </div>
+
+  <!-- DIGITAL -->
+  <div class="page" id="page-digital">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Reputación digital</div>
+        <div class="section-subtitle">Google Business Profile · Instagram · Benchmarking (preliminar)</div>
+      </div>
+      <div class="section-source">Julio 2026</div>
+    </div>
+
+    <div class="grid-4">
+      <div class="card scorecard-sm"><div class="scorecard-label">Interacciones GBP</div><div class="scorecard-value">6.901</div><span class="scorecard-delta delta-down">-16,4% i.a.</span></div>
+      <div class="card scorecard-sm"><div class="scorecard-label">Vistas de perfil</div><div class="scorecard-value">25.407</div><span class="scorecard-delta delta-neutral">+0,2% i.a.</span></div>
+      <div class="card scorecard-sm"><div class="scorecard-label">Direcciones</div><div class="scorecard-value">5.639</div><span class="scorecard-delta delta-down">-14,2% i.a.</span></div>
+      <div class="card scorecard-sm"><div class="scorecard-label">Clics al sitio</div><div class="scorecard-value">1.104</div><span class="scorecard-delta delta-down">-28,0% i.a.</span></div>
+    </div>
+    <div class="insight-box insight-neutral">
+      <div class="insight-eyebrow">💡 Lectura</div>
+      <p>Las vistas de perfil se sostienen casi sin cambio interanual, mientras que las acciones posteriores a la vista (interacciones, direcciones, clics) bajan todas. El perfil sigue siendo encontrado con la misma frecuencia; lo que varía es cuánta gente actúa después de verlo — <strong>un punto a observar más que a alarmarse</strong>, porque no es un problema de visibilidad.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Instagram — visualizaciones</div>
+        <div class="metric-row"><span class="metric-name">Total</span><span class="metric-val">442.010 (+22,4%)</span></div>
+        <div class="metric-row"><span class="metric-name">Orgánico</span><span class="metric-val">387.987 (+15,1%)</span></div>
+        <div class="metric-row"><span class="metric-name">Pagado</span><span class="metric-val">52.461 (+137,2%)</span></div>
+        <div class="metric-row"><span class="metric-name">Interacciones</span><span class="metric-val">4.851 (+21,7%)</span></div>
+        <div class="insight-box insight-azul">
+          <div class="insight-eyebrow">💡 Lectura</div>
+          <p>El crecimiento es mayormente orgánico; lo pagado crece más rápido en términos relativos pero explica menos de un octavo del total. Es un dato útil para calibrar expectativas si se evalúa aumentar inversión en pauta — <strong>el retorno marginal de lo orgánico sigue siendo la base del crecimiento.</strong></p>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Campaña destacada — Club Creativo y Social</div>
+        <div class="metric-row"><span class="metric-name">Visualizaciones orgánicas</span><span class="metric-val">40.750</span></div>
+        <div class="metric-row"><span class="metric-name">Interacciones</span><span class="metric-val">723</span></div>
+        <div class="metric-row"><span class="metric-name">Gasto pauta (9 días)</span><span class="metric-val">$13.403,71</span></div>
+        <div class="metric-row"><span class="metric-name">Costo por visita al sitio</span><span class="metric-val">$52,15</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Benchmarking — Rosario (preliminar)</div>
+      <div class="podium">
+        <div class="podium-item" style="border-color:#BDBDBD;"><div class="podium-name">Alto Rosario</div><div class="podium-val">4,4★</div><div class="podium-sub">~50.087 res. · ~260/mes</div></div>
+        <div class="podium-item" style="border-color:#BDBDBD;"><div class="podium-name">Portal Rosario</div><div class="podium-val">4,2★</div><div class="podium-sub">~28.435 res. · ~155/mes</div></div>
+        <div class="podium-item" style="border-color:var(--rojo);"><div class="podium-name">Shopping del Siglo</div><div class="podium-val">4,2★</div><div class="podium-sub">~19.260 res. · 47/mes</div></div>
+        <div class="podium-item" style="border-color:#BDBDBD;"><div class="podium-name">Paso del Bosque</div><div class="podium-val">4,2★</div><div class="podium-sub">~13.556 res. · ~135/mes</div></div>
+        <div class="podium-item" style="border-color:#BDBDBD;"><div class="podium-name">Fisherton Plaza</div><div class="podium-val">4,3★</div><div class="podium-sub">~9.872 res. · ~35/mes</div></div>
+      </div>
+      <div class="insight-box insight-azul">
+        <div class="insight-eyebrow">💡 Lectura</div>
+        <p>El rating de SDS está a la par de dos de los cuatro comparables; la diferencia real está en volumen de interacción mensual, no en calidad percibida. <strong>El desafío, por ende, no es mejorar una mala reputación, sino incentivar una mayor participación e interacción con la marca.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAFICO -->
+  <div class="page" id="page-trafico">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Tráfico</div>
+        <div class="section-subtitle">Primer mes con Retail Chek como sistema único y auditado</div>
+      </div>
+      <div class="section-source">Julio 2026 · comparación i.a. disponible desde 2027</div>
+    </div>
+
+    <div class="insight-box insight-neutral" style="margin-top:0;margin-bottom:20px;">
+      <div class="insight-eyebrow">ℹ️ Confiabilidad de los datos</div>
+      <p>Julio es el primer mes con Retail Chek como sistema único y auditado. La comparación año contra año recién estará disponible a partir de 2027 (agosto 2026 vs. agosto 2027). <strong>Julio, con el Mundial de por medio, queda como referencia y no como dato duro</strong> para uso comparativo futuro.</p>
+    </div>
+
+    <div class="grid-4">
+      <div class="card scorecard"><div class="scorecard-label">Accesos totales</div><div class="scorecard-value">310.697</div></div>
+      <div class="card scorecard"><div class="scorecard-label">Ingreso Córdoba</div><div class="scorecard-value">62,7%</div></div>
+      <div class="card scorecard"><div class="scorecard-label">Ingreso Rioja</div><div class="scorecard-value">23,4%</div></div>
+      <div class="card scorecard"><div class="scorecard-label">Ingreso Roca</div><div class="scorecard-value">13,9%</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Cruce de perfil — tráfico presencial · Instagram · encuesta CX</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          <tr style="color:var(--gris-medio);text-align:left;"><th style="padding:6px 0;">&nbsp;</th><th>Tráfico</th><th>Instagram</th><th>Encuesta CX</th></tr>
+          <tr style="border-top:1px solid var(--gris-borde);"><td style="padding:8px 0;">Mujer</td><td>59,1% <span style="color:var(--gris-medio);font-size:11px;">(68,9% excl.)</span></td><td>89,6%</td><td>67,5%</td></tr>
+          <tr style="border-top:1px solid var(--gris-borde);"><td style="padding:8px 0;">Hombre</td><td>26,7% <span style="color:var(--gris-medio);font-size:11px;">(31,1% excl.)</span></td><td>10,4%</td><td>32,5%</td></tr>
+          <tr style="border-top:1px solid var(--gris-borde);"><td style="padding:8px 0;">Franja etaria dominante</td><td>31-40 (40,4%)</td><td>35-44 (37,2%)</td><td>18-24 (23,0%)</td></tr>
+        </table>
+        <div class="insight-box insight-neutral">
+          <div class="insight-eyebrow">💡 Lectura</div>
+          <ul>
+            <li>En sexo, tráfico presencial y encuesta convergen (68,9% vs. 67,5% mujer) — la encuesta representa razonablemente a quien visita.</li>
+            <li>Instagram está por encima de ambas, lo cual indica que la comunicación digital llega a un perfil más acotado que el universo real de visitantes.</li>
+            <li>En edad, el cruce es menos concluyente: los tres instrumentos usan rangos etarios distintos (Retail Chek por décadas, Instagram y encuesta con cortes propios) — se puede decir que ninguna de las tres contradice a las otras de forma marcada.</li>
+            <li><strong>A partir del próximo mes se establecerá un rango etario similar entre los tres instrumentos</strong> para optimizar el análisis.</li>
+          </ul>
+        </div>
+      </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Vacaciones de invierno</div>
+      <div class="grid-2">
+        <div class="scorecard-sm card-sm" style="background:var(--verde-suave);border-radius:8px;">
+          <div class="scorecard-label">Pico vs. mejor miércoles fuera de la ventana</div>
+          <div class="scorecard-value verde" style="font-size:32px;">+41,4%</div>
+          <div class="scorecard-sub">miércoles 8/07, comparación libre de Mundial</div>
+        </div>
+        <div class="scorecard-sm card-sm" style="background:var(--rojo-suave);border-radius:8px;">
+          <div class="scorecard-label">Caída acumulada segmento familiar</div>
+          <div class="scorecard-value rojo" style="font-size:32px;">-40,6%</div>
+          <div class="scorecard-sub">desde 2024, tras el cambio de formato de actividades</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gris-medio);line-height:1.6;margin-top:14px;">
+        La serie de tres años muestra caída sostenida en el segmento familiar y femenino (-17,4%), mientras el masculino creció (+9,3%) coincidiendo con el año del Mundial. La cobertura de actividades fue equivalente entre 2025 (14/14 días) y 2026 (12/14 días) — separa una causa estructural (cambio de formato 2024→2025) de una coyuntural (cruce con el Mundial en 2026).
+      </div>
+      <button class="ver-detalle" onclick="openModal('modal-vacaciones')">Ver serie completa por segmento ↗</button>
+    </div>
+  </div>
+
+  <!-- OPERACIONES -->
+  <div class="page" id="page-operaciones">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Operaciones</div>
+        <div class="section-subtitle">Relevamiento de infraestructura — medición de seguimiento realizada los primeros días de agosto, acumulado desde abril</div>
+      </div>
+      <div class="section-source">49 hallazgos registrados</div>
+    </div>
+
+    <div class="grid-4">
+      <div class="estado-card" style="background:#FFF8E1;"><div class="estado-num" style="color:#8D6E00;">21</div><div class="estado-label">Pendiente</div><div class="estado-pct" style="color:#8D6E00;">43%</div></div>
+      <div class="estado-card" style="background:#E8F5E9;"><div class="estado-num" style="color:#2E7D32;">15</div><div class="estado-label">Resuelto</div><div class="estado-pct" style="color:#2E7D32;">31%</div></div>
+      <div class="estado-card" style="background:var(--azul-suave);"><div class="estado-num" style="color:var(--azul);">8</div><div class="estado-label">En proceso</div><div class="estado-pct" style="color:var(--azul);">16%</div></div>
+      <div class="estado-card" style="background:#FFEBEE;"><div class="estado-num" style="color:#C62828;">3</div><div class="estado-label">Espera de reforma</div><div class="estado-pct" style="color:#C62828;">6%</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Lo que muestra la serie temporal</div>
+      <div class="metric-row"><span class="metric-name">Hallazgos con más de 100 días desde detección</span><span class="metric-val">12</span></div>
+      <div class="metric-row"><span class="metric-name">Reincidencias tras intervención ya realizada</span><span class="metric-val">5</span></div>
+      <div class="metric-row"><span class="metric-name">Caso más antiguo sin resolver (mapas de comercios)</span><span class="metric-val">7+ meses</span></div>
+      <div class="insight-box insight-neutral">
+        <div class="insight-eyebrow">💡 Lectura</div>
+        <p>En algunos casos la intervención ya se hizo y el hallazgo reapareció (humedad que retorna después de pintar, un mapa de comercios desactualizado hace más de siete meses). En otros, la intervención está definida pero depende de una instancia de decisión posterior que aún no se resolvió.</p>
+        <p><strong>Esto no es indicación de que falte información sobre estos casos</strong> — están relevados, con acción propuesta y responsable asignado. Lo que señala la serie es una pregunta de proceso, no de conocimiento: ¿el circuito actual (detectar → proponer acción → ejecutar o aprobar) cuenta con un mecanismo de planificación con plazos y seguimiento explícito, o el avance depende de que cada caso se revise informalmente en la siguiente vuelta de relevamiento?</p>
+        <p>Doce casos sin resolución en tres meses y cinco reincidencias sugieren que vale la pena revisar <strong>el circuito en sí</strong> — no quién ejecuta cada tarea puntual, sino si existe una instancia de planificación, ejecución y seguimiento que sostenga el proceso de forma consistente, independientemente de quién esté a cargo del relevamiento en cada momento.</p>
+      </div>
+      <button class="ver-detalle" onclick="openModal('modal-hallazgos')">Ver hallazgos por zona y severidad ↗</button>
+    </div>
+  </div>
+
+  <!-- VALOR POR AREA -->
+  <div class="page" id="page-valor">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Valor de los datos por área</div>
+        <div class="section-subtitle">Qué observar y planificar a partir de julio, por área de gestión</div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="valor-card card" style="border-color:var(--rojo);">
+        <div class="valor-area" style="color:var(--rojo);">Directorio</div>
+        <div class="valor-text">Julio aporta dos elementos de gestión concretos:
+          <ul style="margin:8px 0 0; padding-left:16px;">
+            <li style="margin-bottom:6px;">Una medición limpia del efecto del bloque de actividades de vacaciones de invierno (dato aplicable a la planificación de eventos, independientemente de qué se decida hacer con él).</li>
+            <li>Un panorama de infraestructura donde el punto de atención es el circuito de seguimiento.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="valor-card card" style="border-color:var(--azul);">
+        <div class="valor-area" style="color:var(--azul);">Marketing</div>
+        <div class="valor-text">
+          <ul style="margin:0; padding-left:16px;">
+            <li style="margin-bottom:6px;">El post de mejor desempeño del mes coincide con la campaña de vacaciones de invierno, con un costo por visita medido por primera vez ($52,15) — dato de referencia para futuras decisiones de inversión en pauta.</li>
+            <li>En el caso del perfil de Google, el benchmarking muestra que el rating está a la par de la competencia y que la brecha es de volumen de interacción — un dato que orienta dónde podría enfocarse el esfuerzo si se decide priorizarlo.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="valor-card card" style="border-color:var(--amarillo);">
+        <div class="valor-area" style="color:#8D6E00;">Operaciones</div>
+        <div class="valor-text">El dato relevante no es el número de hallazgos sino la ausencia de un mecanismo sostenido de planificación, ejecución y seguimiento que explique por qué una parte de ellos permanece abierta más de tres meses o reaparece tras la intervención — una pregunta de organización de la gestión, no de las tareas puntuales que la componen.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL RESEÑAS -->
+<div class="modal-overlay" id="modal-resenas">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><div class="modal-title">Reseñas de Google — enero a julio 2026</div><div class="modal-sub">140 reseñas con texto, fecha y calificación verificadas</div></div>
+      <button class="modal-close" onclick="closeModal('modal-resenas')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-filters" id="resenas-filters"></div>
+      <div id="resenas-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ENCUESTA -->
+<div class="modal-overlay" id="modal-encuesta">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><div class="modal-title">Comentarios abiertos — Encuesta CX Q2</div><div class="modal-sub">190 respuestas a "¿En qué podríamos mejorar?"</div></div>
+      <button class="modal-close" onclick="closeModal('modal-encuesta')">&times;</button>
+    </div>
+    <div class="modal-body"><div id="encuesta-list"></div></div>
+  </div>
+</div>
+
+<!-- MODAL SIGUI -->
+<div class="modal-overlay" id="modal-sigui">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><div class="modal-title">Reclamos vía Sigui — julio 2026</div><div class="modal-sub">10 de 126 conversaciones</div></div>
+      <button class="modal-close" onclick="closeModal('modal-sigui')">&times;</button>
+    </div>
+    <div class="modal-body"><div id="sigui-list"></div></div>
+  </div>
+</div>
+
+<!-- MODAL HALLAZGOS -->
+<div class="modal-overlay" id="modal-hallazgos">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><div class="modal-title">Hallazgos de infraestructura por zona</div><div class="modal-sub">Severidad estimada por estado y días abiertos — el campo "Prioridad" del relevamiento aún no está completado</div></div>
+      <button class="modal-close" onclick="closeModal('modal-hallazgos')">&times;</button>
+    </div>
+    <div class="modal-body"><div id="hallazgos-acc"></div></div>
+  </div>
+</div>
+
+<!-- MODAL VACACIONES -->
+<div class="modal-overlay" id="modal-vacaciones">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><div class="modal-title">Vacaciones de invierno — serie 2024-2026</div><div class="modal-sub">Sistema anterior, mismo proveedor los tres años, unidades convertidas al sistema nuevo</div></div>
+      <button class="modal-close" onclick="closeModal('modal-vacaciones')">&times;</button>
+    </div>
+    <div class="modal-body"><div id="vacaciones-table"></div></div>
+  </div>
+</div>
+
+<script>
+const RESENAS = [{"f": "2026-07-30", "a": "Hernan Maldonado", "t": "Bien", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-29", "a": "Marcelo Graziosi", "t": "Carísimo todo", "s": 4, "tm": "Precio", "sn": "Positivo", "ev": false}, {"f": "2026-07-28", "a": "Fernando Barroso", "t": "Esta bien, pero siempre lo mismo", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-07-28", "a": "Jorge Juarez Sanchez", "t": "Limpio y precios acordes", "s": 4, "tm": "Precio, Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-07-28", "a": "Valeria Rivarola", "t": "Le doy 4 estrellas porque muchas veces está rota la escalera eléctrica, pero me encanta este lugar.", "s": 4, "tm": "Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-07-27", "a": "Alicia Bartolome", "t": "Lindo lugar para ir con niños. Juegos divertidos y seguros.Espacio resguardado para los mas pequeños. Un 10 de 10", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-25", "a": "Leo Ribot", "t": "Juegos para los chicos, comidas, buena variedad de prendas para realizar compras.. muy completo especial para dias frios o de lluvia.. excelente para merendar o desayunar.", "s": 5, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-07-25", "a": "Alejandro Favere", "t": "lindo y muy completo lugar!!", "s": 5, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-07-25", "a": "Mario B", "t": "Excelnte shopping en el centro rosarino Para vísitar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-23", "a": "Nair Perez Olivi", "t": "Me encanta ir! Variedad de negocios con diferentes promociones", "s": 4, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-07-22", "a": "Andres V", "t": "Ubicado sobre la peatonal Córdoba, microcentro de la ciudad. Variedad de opciones comerciales. Precios varios.", "s": 4, "tm": "Precio, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-07-21", "a": "Guillermo Barragan", "t": "En el shopping podes encontrar una gran diversidad de productos, desde indumentaria deportiva, informal, calzado y también degustar una merienda o un almuerzo", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-07-21", "a": "Mercedes Noble", "t": "Lugar cómodo tranquilo locales comerciales variados cafés sándwiches helados comidas tortas sanitarios cine gimnasio estacionamiento ascensores...\nBaños en cada piso, limpios...", "s": 5, "tm": "Estacionamiento, Limpieza, Mantenimiento, Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-07-20", "a": "Carina Olaviaga", "t": "Lindo y tranquilo, hermosas las vidrieras", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-19", "a": "Carina Alt", "t": "En el centro de Rosario. Con estacionamiento pago en subsuelo. U otros estacionamientos enfrente y alrededor. Con escaleras mecánicas, ascensores.", "s": 4, "tm": "Estacionamiento, Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-07-17", "a": "S. Vera", "t": "Tenes de todo y hay muchas promociones con tc y efv\nTenes cine a mano, cafetería,  cerca de todo.", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-12", "a": "Cate Cosimi", "t": "Lo poco que vi me encantó pero que mal que los locales cierren a las 20:00 hs", "s": 4, "tm": "Servicio", "sn": "Positivo", "ev": false}, {"f": "2026-07-12", "a": "Franco Jerez", "t": "En mi opinion, es un shopping bastante completo, con marcas internaciones bastantes buenas y con un ambiente limpio y tranquilo.", "s": 5, "tm": "Limpieza, Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-07-11", "a": "Brian Mastriaco", "t": "Siempre me gusta caminar y comprar cosas , es un hermoso shopping", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-07-11", "a": "Luciano Marull", "t": "Hacia mucho que no iba, esta muy mejorado, muy lindo y completo", "s": 5, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-07-11", "a": "Gustavo 1234", "t": "Es muy atractivo, lastima que no tiene parking y limita la concurrencia. Mucha variedad de locales y muy bien la prolijidad de los mismos y del shopping.", "s": 4, "tm": "Estacionamiento, Limpieza, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-07-09", "a": "Yemina Paz", "t": "Uno de los shoppings más lindos y finos de Rosario. Amo todo lo que venden y traen muchas cosas de marcas que en otros lados no se consiguen. El mejor lugar para encontrar varios regalos, decorar bien la casa. Mi local favorito es La Pasionaria.", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-07-09", "a": "Pito Catalán", "t": "Sería bueno que se aggiornen y permitan el ingreso con mascotas con correa como en tantos lugares", "s": 3, "tm": "Servicio", "sn": "Neutro", "ev": false}, {"f": "2026-07-07", "a": "Maria Laura Rodriguez", "t": "Siempre impecable.\nAhora con nuevas propuestas gastronomicas.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-30", "a": "Lucia Tognarelli", "t": "está bellísimo el shopping! me encanta encontrar murales y deco de artistas rosarinos y las propuestas son cada vez más lindas❤", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-30", "a": "Omar Canabal", "t": "Muy prolijo…", "s": 5, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-06-29", "a": "Silvia Gimenez", "t": "Shopping con buenas tiendas cine y espacios de café y comidas rápidas", "s": 4, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-06-28", "a": "Carina Brugiafreddo", "t": "Increíble hermoso", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-27", "a": "lydia carreras", "t": "Me parece un muy buen lugar para compras, para comer o tomar algo, ver una peli o pasear. Limpio, luminoso, buena atención.", "s": 5, "tm": "Servicio, Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-06-24", "a": "Liliana Galli", "t": "Encontras todo y más en un solo lugar.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-24", "a": "Adrian Menghi", "t": "Buen paseo aunque los baños no estaban en las mejores condiciones( un poco sucios y mojados)", "s": 4, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-06-23", "a": "Tamara Orlando", "t": "Es lindo y cómodo pasear en este shopping!", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-23", "a": "sol vinelli", "t": "Linda galería", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-21", "a": "Betina Charani", "t": "No te dejan entrar con perritos", "s": 1, "tm": "Servicio", "sn": "Negativo", "ev": false}, {"f": "2026-06-20", "a": "Gabriela R Gordillo", "t": "El  shopping es muy lindo. No es muy grande pero encontrás lo esencial para una tarde de compras o para hacer un post compras por el centro ( peatonales)\nEncontrás lugares de comida rápida con pelotero para niños.\nBaños siempre en muy buenas condiciones.\nTiene un cine en la planta alta y locales de primeras marcas de ropa  para toda la familia.\nAdemás, hay lugares para la tecnología  y multicompras, de esos que  adoran las adolescentes.", "s": 5, "tm": "Limpieza, Variedad-ChicoPeroCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-06-17", "a": "Maribel Manzone", "t": "Menos el stand del medio del Juleriaque , el resto de los negocios,  todo moda, Lady Stork, como quieres,  Xl, todos atienden bárbaro y los baños siempre limpios", "s": 4, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-06-16", "a": "Patricia Garrido", "t": "Me encanta, toda la vida visitándolo cada vez que voy a Rosario. Shopping completo.", "s": 5, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-06-16", "a": "Mariel Devalle", "t": "Encontras todo en un mismo lugar cerquita de todo", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-11", "a": "Liliana Amelia Marin", "t": "No se si se refiere a Paseo del Siglo.Cordoba entre Pte.Roca y España.\nSi es asi,esta muy linda.\nY otra vez con su ascensor arreglado.", "s": 5, "tm": "Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-06-10", "a": "Damian Almada", "t": "Muy buena ubicación..hermoso ..", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-06-04", "a": "Federico Caffaratti", "t": "Muy lindo Shoping, antiguamente galería.  Emplazado en el centro Rosarino. De 3 pisos , muy completo.", "s": 4, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-06-03", "a": "Betiana Medina", "t": "Muy muy buenos precios", "s": 5, "tm": "Precio", "sn": "Positivo", "ev": false}, {"f": "2026-05-31", "a": "Leticia Miranda", "t": "Pocas cosa", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-05-31", "a": "Maria Eugenia Puntin", "t": "Mini shopping. Un clásico de la ciudad!", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-27", "a": "Sergio Scaricaciottoli", "t": "Pequeño pero muy agradable. Buenos comercios y mucha limpieza. Recomendable.", "s": 4, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-05-24", "a": "Miguel Angel", "t": "Una linda galería para shopping le falta", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-05-22", "a": "ester glize", "t": "Cuenta con muy lindos locales de ropa, joyería, comidas, las mejores marcas en vestimenta, calzados etc....  Cuenta además con cine y juegos para niños.", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-05-21", "a": "Mignon Troilo", "t": "Basico: útil para acortar camino", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-21", "a": "Beto Aguirre", "t": "Excelente. Variedad de locales. Cine. Bar y McDonald's. Seguridad baños muy limpios.", "s": 5, "tm": "Limpieza, Seguridad, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-05-21", "a": "Aldana Cinalli", "t": "Ideal para pasear y/o comer algo, una diversidad de locales para comprar", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-05-21", "a": "Sofi Albrizio", "t": "Hermoso como de costumbre. Siento profunda tranquilidad al estar allí\nSiempre invita a regresar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-20", "a": "Maximiliano Gordillo “MSInteractiva”", "t": "Lindo ambiente familiar. Cómodo y hay para todos los gustos, ahora agregaron el estacionamiento con la app que te dan 3 horas gratis y si vas al cine 4 horas. Tenés q descargar una app, te registras y listo. Es facil", "s": 5, "tm": "Estacionamiento, Servicio", "sn": "Positivo", "ev": false}, {"f": "2026-05-17", "a": "Cristián Perugini", "t": "Excelente paseo comercial rosarino. Por su tamaño es bastante completo y variado. Mejores precios. Para parar a desayunar o merendar o almorzar", "s": 5, "tm": "Precio, Variedad-ChicoPeroCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-05-17", "a": "Marcela Sosa", "t": "Esta muy lindo ambientado y muy aseado.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-13", "a": "Cris Caballero", "t": "Lindo lugar, almorzamos en el resto de planta baja, dos menú diferente cada platos con jugo incluído $16000", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-11", "a": "Juan Carlos Urquiza", "t": "Muy bien. Buenos locales.", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-10", "a": "FERNANDO BERMUDEZ", "t": "Uno de los mejores shopping.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-07", "a": "daniel corones", "t": "Tenés q conocerlo", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-05", "a": "Horacio Dip", "t": "Locales para todos los gustos. Excelente paseo de compras", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-05-03", "a": "Luciano Cesarin", "t": "Excelente.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-05-02", "a": "Tati Fernandes", "t": "Lindo, los baños siempre limpio,  encontrás casi de todo. Hace como un mes que la escalera mecánica no funciona", "s": 4, "tm": "Limpieza, Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-05-02", "a": "Bianca Carbonari", "t": "Me gustaria que sea pet friendly", "s": 4, "tm": "Servicio", "sn": "Positivo", "ev": false}, {"f": "2026-05-01", "a": "jorge alejandro Carrizo", "t": "Buenas atención, precios normales, bastante surtido en mercadería disponible", "s": 4, "tm": "Servicio, Precio, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-04-30", "a": "Sandra Eli S", "t": "Voy al cine.\nHermosas vidrieras", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-30", "a": "Diego H. Cancelo", "t": "Lindo lugar con varias alternativas (cosas de ropa, electrónica, gastronomía, etc). En la semana por la mañana o tarde temprano muy tranquilo, a la tardecita o fines de semana mucha gente.....", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-04-28", "a": "Marcelo Bataglia", "t": "Buen barrio para compras", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-26", "a": "Noemi Romero", "t": "Lindo lugar cuidado Con locales muy pequeños lo que hace que sean incómodos para ver la mercadería o tengan poca variedad de productos", "s": 4, "tm": "Variedad-Insuficiente(queja)", "sn": "Positivo", "ev": false}, {"f": "2026-04-25", "a": "Natalia Quiroz", "t": "Shopping del Siglo es uno de los centros comerciales más conocidos y elegantes de la ciudad. Es un lugar cómodo, moderno y bien organizado, ideal para hacer compras, pasear o pasar un rato agradable.\n\nCuenta con una buena variedad de tiendas, opciones gastronómicas y espacios limpios y bien cuidados, lo que hace que la experiencia sea muy agradable. El ambiente es tranquilo en comparación con otras zonas comerciales más concurridas.\n\nEs perfecto para ir en familia, con amigos o incluso solo, ya que ofrece todo lo necesario en un solo lugar. Un clásico de Rosario que siempre vale la pena visitar. ✨", "s": 5, "tm": "Limpieza, Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-04-24", "a": "Nose", "t": "Es un buen shopping, pero la atención en KFC fue una basura, estuve más de 20 minutos esperando para retirar un simple conito de helado, se ve que la única chica que atendía, en la parte de donde se retira lo de cafetería-postres, no tenía ganas de trabajar porque se iba y volvía cada 30 minutos prácticamente éramos 10 personas intentando retirar lo que habíamos comprado en ese sector. Se supone que es comida rápida. Increíble. En los demás lugares hay buena atención.", "s": 3, "tm": "Servicio", "sn": "Neutro", "ev": false}, {"f": "2026-04-24", "a": "Karina Niz", "t": "Muy lindo lugar para distraerse un rato", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-23", "a": "lucas Barticevic", "t": "Cómodo", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-23", "a": "Starkes Haus", "t": "Es lindo, limpio y ordenado en pleno centro. Pet friendly. Pequeño pero con la calidad de otros de mayor superficie. No dejen que decaiga ya que hay varios locales vacíos.", "s": 5, "tm": "Servicio, Limpieza, Mantenimiento, Variedad-ChicoPeroCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-04-17", "a": "Dalma Medina", "t": "Hermoso lugar para recorrer y pasear!", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-17", "a": "Sergio Morello", "t": "Run down. Dirty. Too many kids.", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-04-14", "a": "JOSÉ LUIS BLANDO", "t": "EXCELENTE  SEGURIDAD PRIVADA Y ADICIONALES, LOCALES DE TODAS LAS MARCAS Y ESPECIALIDADES GOURMET Y BARES, RESTORANES, HELADERÍAS, CAFETERÍAS Y CINE EXCLUSIVO !!!!!! LOS FELICITO A SUS PROPIETARIOS, SIGAN CRECIENDO ÉXITOS !!!!!!  SALUDOS ‍♂", "s": 5, "tm": "Seguridad, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-04-14", "a": "Esteban Pivetta", "t": "Un clásico de Rosario", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-13", "a": "Silvia M Cabral", "t": "Bonito lugar. Mejorar precios.", "s": 4, "tm": "Precio", "sn": "Positivo", "ev": false}, {"f": "2026-04-12", "a": "Adrian Gabriel", "t": "Buenos locales. Lindos bares. Falta que terminen de arreglar la fachada que está en remodelación.", "s": 4, "tm": "Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-04-12", "a": "Monica Marcela Prokopowiez", "t": "Un un lindo lugar para pasear. Cómo todo shopping lo que se vende en esos  locales son muy caros.", "s": 4, "tm": "Precio", "sn": "Positivo", "ev": false}, {"f": "2026-04-10", "a": "jorgelina avalos", "t": "El lo Xl muy buena atención y precio", "s": 4, "tm": "Servicio, Precio", "sn": "Positivo", "ev": false}, {"f": "2026-04-10", "a": "Martinho Kiffer", "t": "Diversas lojas com variadas opções de compras, tem pra todo gosto!", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-04-05", "a": "Pau Gimenez", "t": "Hermoso shopping con variedad de locales y bastante amplio.", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-04-01", "a": "Aguaraka karimendoza", "t": "Es un lugar con pequeños comercios. Ambiente agradable y ordenado . Se puede disfrutar de hacer compras y luego sentarse a merendar o hacer un break.", "s": 4, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-03-27", "a": "florencia procopio", "t": "Bastante completo", "s": 4, "tm": "Variedad-PercepcionCompleto", "sn": "Positivo", "ev": false}, {"f": "2026-03-24", "a": "Juan Belmonte", "t": "Shopping Rosarino por excelencia", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-03-24", "a": "Manu Navarro", "t": "Visitar el Shopping del Siglo es recorrer un pedazo de la historia comercial de Rosario. Inaugurado en 1993, fue el primer gran shopping de la ciudad y logró integrarse perfectamente al histórico Paseo del Siglo. Me encanta que mantenga esa esencia de centro de encuentro en pleno centro, rodeado de palacios y edificios emblemáticos. Un detalle que pocos recuerdan es que su entrada por Córdoba solía ser abierta y tenía un ascensor panorámico. Ideal para hacer compras y después caminar por la zona para ver la arquitectura de la zona. Con el tiempo fue mutando todo, hoy en día no es uno de los principales ni de los más modernos, pero sigue en pie!", "s": 3, "tm": "Mantenimiento", "sn": "Neutro", "ev": false}, {"f": "2026-03-24", "a": "GUCHI ERMELINDA GALARZA", "t": "Muy buena siepre que viajo visito y compro.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-03-23", "a": "Mariana Ruel", "t": "Pequeño y lindo shopping!", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-03-22", "a": "Geronimo Mendez", "t": "Me encanta el shopping del siglo.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-03-14", "a": "ANDREA BOSCHETTI", "t": "Lindo lugar\nLimpio", "s": 5, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-03-11", "a": "1barbi", "t": "es lindo lugar", "s": 3, "tm": "", "sn": "Neutro", "ev": false}, {"f": "2026-03-09", "a": "Pablo Giacone", "t": "Excelente  para almorzar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-03-08", "a": "LILIANA AGUILERA", "t": "Hermosísimo lugar para hacer compras y comer algo rápido", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-03-08", "a": "Anto Gasparri", "t": "Hoy compartimos un hermoso encuentro\nde journaling que organizo el shopping, super recomendable! Muchas gracias!", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Veronica Elena Valdez Godoy", "t": "Momento único!! Comenzar a escribir... un nuevo tiempo.\nGracias Andre Gracias Shopping por esta hermosa oportunidad!", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Camila Zapata", "t": "Me encantó la experiencia. Ojalá la vuelvan a repetir. Un día para el disfrute y la creatividad.", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "A. Camila Hernández", "t": "Hermoso taller de Journaling con Andrea y rico desayuno en Café Martinez. Una experiencia muy interesante y bonita para animarse a escribir!", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Giuliana Folgar", "t": "Hermoso tiempo compartido. Una mañana super productiva y motivante.\n\nDestaco la amabilidad de Andrea y todo lo que nos transmitió.\n\nExcelente la atención de los chicos de Café Martínez", "s": 5, "tm": "Servicio", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Vale Zava", "t": "Una experiencia única. Para compartir con amigas. Un ratito para detenernos y volver a la esencia. Gracias Andre!", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Rosarito Tega", "t": "Hermosa experiencia, sencillez y profundidad conviviendo.\nMuchas gracias x esta iniciativa. Gracias gracias gracias.", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Mailen Lo Pilato Blois", "t": "Eventos muy bien organizados y la atencion es genial", "s": 5, "tm": "Servicio", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "María Laura Cabrera", "t": "Hicimos un taller hermoso de journaling, perfecto para compartir con amigas", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "María Bertaina", "t": "Excelente momento, el lugar hermoso para compartir ", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Priscila Gonzalez Villagran", "t": "Los locales son muy lindos y siempre tienen actividades muy buenas !", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "gilda gasparri", "t": "Hermoso lugar, super recomendable la experiencia.", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Candela Gonzalez", "t": "Hermoso el taller de journaling de Andrea Enjuto, un encuentro muy inspirador y creativo.", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-08", "a": "Denise Da Ren", "t": "muy linda la actividad de journaling", "s": 5, "tm": "", "sn": "Positivo", "ev": true}, {"f": "2026-03-05", "a": "Ovidio Valli", "t": "Céntrico y mucha variedad de locales.", "s": 4, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-02-28", "a": "muffinfeliz", "t": "Un lugar realmente encantador y muy lindo para pasear, me encanto la una incorporación del cine ahí, si tienen la oportunidad de ir no la pierda.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-27", "a": "Silvana Comninos", "t": "Siempre hermoso.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-26", "a": "Evaristo Dos Nardos", "t": "Un shoping más , buen lugar para tomarse un café. También uno de los pocos lugares en Rosario donde conseguir un baño público cuando uno anda a la carrera.", "s": 5, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-02-24", "a": "Jose Lanza", "t": "Muy lindo, hay de todos los gustos.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-23", "a": "Sebastian Ruani", "t": "Buen lugar para pasear.", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-22", "a": "Pablo Martinez", "t": "Paso obligado por esa hermosa ciudad", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-22", "a": "Johanna rabbia", "t": "No es muy acogedor", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-21", "a": "Blanca Estandar", "t": "Muy bonito lugar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-21", "a": "Daniela Bartomioli", "t": "Aburrido. Muy caro .", "s": 3, "tm": "Precio", "sn": "Neutro", "ev": false}, {"f": "2026-02-20", "a": "Milagros Corzo", "t": "Tiene varias tiendas para ver, muchos lugares para comer y los baños están super cuidados", "s": 5, "tm": "Limpieza, Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-02-18", "a": "Pilar Ocaña", "t": "Bagels & Bagels..muy rico desayuno", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-18", "a": "francesco", "t": "Dentro de todo lindo", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-17", "a": "Jimena Mazza", "t": "Es un shopping emblemático de la ciudad. Aparte de sus locales, hay buena gastronomía y cine.", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-02-09", "a": "Facundo Temperini", "t": "Excelente lugar para ir en familia", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-06", "a": "Stella Molina", "t": "Hermoso NEGOCIOS COMIDA ROPA TECNOLOGIA Y CINE LO MAS.,!!!!!", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-02-06", "a": "Analia Canale Celis", "t": "Me encantó ", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-02-02", "a": "Evangelina Else", "t": "Hermoso lugar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-30", "a": "Sandra Graciela Vanni", "t": "Hermoso lugar", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-26", "a": "Artística Yantinian Yan", "t": "Muy pequeñito y sofocante. En cuanto a espacios. La percepcion espacial es importante a la hora de sentirse comodo calido y en paz. Si entro y tiene entrad embudo no se que me espera. Lo demas funcional.", "s": 4, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-23", "a": "Valentina Sanabria", "t": "Es perjudicial para la salud ir al Shopping Paseo del Siglo en estos días. Están haciendo remodelaciones desde las 8am hasta las 18pm; se descarta planes como desayunar y merendar. No sólo por los ruidos molestos, también la cuestión insalubre de tener que comprar algo y que venga todo pasado por polvillo; desde la comida hasta una prenda de ropa. Y vos ves a los empleados siempre limpiando, siempre pasando el trapo pero no deja de llenarse de polvo porque están 10hs interrumpidas cambiando los pisos de la planta baja. Es una real pena que un punto de encuentro en el corazón del centro ya no sea un lugar para descansar o pasear. Ojalá hicieran como los demás Shoppings dónde las remodelaciones se hacen durante la noche, así los empleados pudieran trabajar tranquilos y los clientes no se llevarían una mala experiencia. Deja mucho que desear últimamente El Siglo.", "s": 1, "tm": "Mantenimiento", "sn": "Negativo", "ev": false}, {"f": "2026-01-22", "a": "magali segoviia", "t": "Ruidos molestos a la mañana no se puede ni hablar", "s": 1, "tm": "", "sn": "Negativo", "ev": false}, {"f": "2026-01-21", "a": "Graciela Marote", "t": "Hermoso shopping para pasear comer comprar haces todo!!", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-21", "a": "Francisco Jose Robles", "t": "De muy buen gusto. Limpio, ordenado,  agradable.", "s": 5, "tm": "Limpieza", "sn": "Positivo", "ev": false}, {"f": "2026-01-21", "a": "Marisol Viso", "t": "Están haciendo arreglos, va a quedar muy lindo", "s": 5, "tm": "Mantenimiento", "sn": "Positivo", "ev": false}, {"f": "2026-01-20", "a": "Yanina Rodriguez", "t": "Variedad de bares, negocios, excelente lugar para hacer comprar, comer o tomar algo entre amigas", "s": 4, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-01-18", "a": "Clor. Carolina Bichara", "t": "De todo. Buen ambiente y tranquilo.", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-17", "a": "monica estigarribia", "t": "Un lugar dnd encuentro todo lo que me gusta; puedo pasar un lindo momento almorzando con mi hija, merendando con alguna amiga o comprando algún regalo o xq no, algo lindo para mí ", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-17", "a": "Soy de Rosario", "t": "No atienden el teléfono.", "s": 1, "tm": "Servicio", "sn": "Negativo", "ev": false}, {"f": "2026-01-17", "a": "Monica Alonso", "t": "Excelente lugar para compras y sentarte a tomar algo disfrutar de una tarde", "s": 5, "tm": "", "sn": "Positivo", "ev": false}, {"f": "2026-01-14", "a": "caballodefuego azul", "t": "Un lindo lugar para esparcimiento, múltiples locales de todo rubro en diferentes plantas y especialmente buenas elecciones para el \"break\" ... tomar algo, compartir con alguien o hacer tiempo en un lugar climatizado y cómodo, como gue el caso que se largo la lluvia en plenos tramites y el Shopping fue la elección correcta para pasar el momento y disfrutarlo!", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-01-14", "a": "Susana Sabbadini", "t": "Muchos locales,de ropa y bares!! Buen ambiente", "s": 5, "tm": "Variedad-Oferta", "sn": "Positivo", "ev": false}, {"f": "2026-01-07", "a": "Jeremías Rodríguez", "t": "literal cada vez que vengo hace meses estan reparando o remodelando algo. cada vez que quiero tomar un cafe es ensordecedor el ruido a taladros y picos y ruidos. Estuvieron meses con el local de baguels ahora en la planta baja. sumamente no recomendado para relajarse", "s": 2, "tm": "Mantenimiento", "sn": "Negativo", "ev": false}];
+const ENCUESTA = [{"t": "Todo está bien", "p1": 8}, {"t": "No sabe, viene ocasionalmente", "p1": 8}, {"t": "No sabe", "p1": 8}, {"t": "Cine poco atractivo.", "p1": 10}, {"t": "Nada está bien", "p1": 8}, {"t": "Mejor atención, no hay asesoramiento", "p1": 8}, {"t": "No hay nada que mejorar. Mantenerse.", "p1": 10}, {"t": "Está bien así.", "p1": 8}, {"t": "Probablemente en la variedad de los negocios y limpieza.", "p1": 8}, {"t": "Atención en los locales, no hay mucha buena onda en algunos", "p1": 10}, {"t": "En arreglar la escalera del medio que siempre que vengo está rota", "p1": 8}, {"t": "Quizás más diversidad de locales de ropa de mujer deportiva. El cine está lindo. Lanaprte nueva me gustó. Pero habría que mejorarlo", "p1": 8}, {"t": "Los baños y la escalera que siempre está rota", "p1": 10}, {"t": "Cada día veo que mejoran más. Los felicito", "p1": 10}, {"t": "Te diría que es pequeño pero veo más marcas cada vez", "p1": 8}, {"t": "No se tal vez más variedad de locales. Más locales de ropa", "p1": 8}, {"t": "Más locales de comida", "p1": 9}, {"t": "Los baños, las puertas no cierran", "p1": 5}, {"t": "Tal vez más oportunidades en locales de comida", "p1": 8}, {"t": "La obra que hicieron del ascensor fue eterna y desagradable. Muchísimo ruido no se podía estar. Polvillo por todas partes. Muy mala gestión de obra. Espero que lean estás cosas", "p1": 7}, {"t": "Siempre vengo al mismo local. Capaz mejorar la variedad de espacios de comida para quedarse más", "p1": 8}, {"t": "Incorporar elementos interactivoa que modernicen el shopping", "p1": 10}, {"t": "Capaz más marcas como las encontras en el alto. Tucci por ejemplo", "p1": 8}, {"t": "Los precios", "p1": 8}, {"t": "Que haya más publicidad del cine. Nadie sabe que hay cine", "p1": 8}, {"t": "Más lugares para sentarse en la heladería Yas espacios de paso. Horario extendido los fines", "p1": 9}, {"t": "No tengo algo que destaque para mejorar", "p1": 7}, {"t": "Más lugares para sentarse", "p1": 8}, {"t": "Mas promociones", "p1": 8}, {"t": "Por ahí tener más variedad de ropa", "p1": 8}, {"t": "Lo que tengo para decirles que uno viene y si no está funcionando la escalera, entonces es el ascensor y así. Siempre algo fallando", "p1": 8}, {"t": "En seguridad y limpieza", "p1": 8}, {"t": "Espacio para sentarse y lugares de esparcimiento, mejor señalización", "p1": 8}, {"t": "Estar mas atento en las reparaciones y que todo esté más prolijo y mantenimiento. Sobre todo en los pisos superiores", "p1": 10}, {"t": "En los baños y en el olor a comida, hay sectores donde hay mucho olor a comida Habría que hacer baños nuevos. Otro tema la escalera mecánica sufre periódicos deterioros. Siempre está en arreglo. Es disparejo.", "p1": 9}, {"t": "Baños y olores de comida en algunos lugares.", "p1": 9}, {"t": "Y diría un poco más la limpieza de los baños e solo más complicado", "p1": 8}, {"t": "Un poco la renovación de los espacios que sea más moderno que se sienta menos anticuado", "p1": 8}, {"t": "Mejor señalización , mejorar los baños y mejor limpieza", "p1": 6}, {"t": "Mas asientos para estar libres", "p1": 10}, {"t": "Los juegos podrían actualizarse", "p1": 9}, {"t": "Hay mucho ruido", "p1": 9}, {"t": "En limpieza de los pisos en general", "p1": 9}, {"t": "Que mejorarán la sala de juegos de los ninos", "p1": 10}, {"t": "Los problemas del shopping no son mejorables me parece, es muy pequeño el shopping. Se siente muy cerrado", "p1": 8}, {"t": "Algunas malas experiencias en los locales", "p1": 9}, {"t": "En la atencion de los locales", "p1": 10}, {"t": "Mas espacios para sentarse", "p1": 8}, {"t": "Señalización, donde esta el cine por ejemplo", "p1": 9}, {"t": "Los baños que siempre están llenos o están limpiando los", "p1": 10}, {"t": "Lo que hay está", "p1": 8}, {"t": "La parte edilicia, ambientación, climatización y baños. Debería haber cambios en las propuestas comerciales. Locales más grandes y más iluminados más confortables.  Y me gustaría que el shopping sume locales en donde vos vengas y hayan cosas para hacer. No el shopping, digo locales.", "p1": 6}, {"t": "Aunque no vivo por acá, trabajo y así como está me gusta", "p1": 10}, {"t": "Asientos más cómodos", "p1": 10}, {"t": "Horários extendidos los fines de semana", "p1": 9}, {"t": "Y a veces veoqnue está un poco sucio", "p1": 8}, {"t": "Veo que hace un montón que está en obras. Es muy largo. Vengo mucho al cine no se puede pagar por transferencia ni con MP", "p1": 10}, {"t": "Tener otra escalera mecánica", "p1": 8}, {"t": "Señalización que está desfasada y confunde.", "p1": 10}, {"t": "Más marcas de ropa de mujer", "p1": 10}, {"t": "WiFi abierto", "p1": 10}, {"t": "Mas lugares para estar, asientos", "p1": 8}, {"t": "Mas ofertas gastronómicas algún restauran con menú ejecutivo por ejemplo", "p1": 8}, {"t": "En la limpieza de los baños", "p1": 10}, {"t": "Mas propuestas comercial menos locales vacios", "p1": 10}, {"t": "No venho nunca porque no soy de Rosario. Pero esta lindo", "p1": 9}, {"t": "Por ejemplo yo consumo mucho la parte de ellos juegos y tienen una atención muy lerda. Y que a veces los baños están sucios y a veces coincide que están limpiando dos a la vez y se hace una cola enorme en el único disponible", "p1": 10}, {"t": "Mejoraron con el ascensor que pusieron", "p1": 8}, {"t": "Hace mucho que no venía a Rosario y aunque está igual se siente diferente y muy agradable el shopping", "p1": 9}, {"t": "Habría que darle más difusión al cine", "p1": 9}, {"t": "Que cierran a las 8, que cierren más tarde.  Starbucks cierra a las 8.", "p1": 10}, {"t": "El sector de los chicos está caído. Vengo mucho con los chicos y es el único sector que está mal. De resto está muy lindo", "p1": 10}, {"t": "Primero no deja la escalera rota tanto tiempo y el ascensor ni te digo. Porque el shopping tiene vida arriba si no tienes eso en marcha no sirvo. Y pasa constantemente y habría que mejorar los juegos para los chicos", "p1": 9}, {"t": "Señalización", "p1": 9}, {"t": "Está bien para ser un shopping en el centro. Por ahí le faltan algunas marcas para no tener que ir al alto", "p1": 7}, {"t": "La verdad que me parece que está bastante bien", "p1": 8}, {"t": "Mejorar la limpieza, a veces no se siente mantenido", "p1": 9}, {"t": "Veo muy lindo el shopping", "p1": 10}, {"t": "Capaz aumentar la seguridad, que se vean más guardias", "p1": 8}, {"t": "Alguna vez abajo hubo un stand como de pruebas y degustaciones eso me gustaba bastante", "p1": 10}, {"t": "Que este mas ambientado, hay mucho silencio o ruido ambiente", "p1": 10}, {"t": "Mas asientos y espacios de paso. No veo fortalezas ni debilidades. La atención es muy mixta. No todos tienen empatía. Algo como un mini market sería lindo. En la favorita tienen algunos así.", "p1": 8}, {"t": "Me gustó mucho los asientos que antes no había, que hayan más especios asi y hay buenos comercios. Es lindo paseo.", "p1": 9}, {"t": "Vengo re poco solo a comprar un regalo o algo así. Los baños son una porquería.", "p1": 10}, {"t": "La climatización, ahora hace calor afuera y también acá", "p1": 8}, {"t": "Ppr ahí que los baños estén más limpios. Todo bien", "p1": 10}, {"t": "Pienso que pueden tener más locales de comida y más de ropa. Más opciones para regalos para niños y para que los niños y las madres estén.", "p1": 9}, {"t": "Yo creo que podrían mejorar el servicio en algunos locales a veces no te dan bolilla.", "p1": 8}, {"t": "El asunto de los baños por ahí hay que subir para usar los baños", "p1": 8}, {"t": "Que la escalera mecánica funcione siempre y que haya una que baje", "p1": 10}, {"t": "Mas gastronomía y opciones.", "p1": 8}, {"t": "Sería espectacular que tuvieran un cine.", "p1": 9}, {"t": "Lo veo super completo para un shopping en el centro", "p1": 8}, {"t": "La atención en los locales a veces no es buena", "p1": 8}, {"t": "La limpieza en los baños estaban socios", "p1": 10}, {"t": "WiFi libre", "p1": 9}, {"t": "Mejorar la señalización", "p1": 8}, {"t": "Estacionamento pagado", "p1": 8}, {"t": "Que tengan estacionamiento siempre venimos al cine y es un garrón conseguir donde estacionar", "p1": 10}, {"t": "Vengo al centro al shopping, estoy conforme", "p1": 10}, {"t": "Que fuese más grandes", "p1": 7}, {"t": "Más marcas de ropa", "p1": 7}, {"t": "El horário me gustaría que cierren más tarde. A veces vengo a las 7.30 y ya están cerrando", "p1": 9}, {"t": "La distribución de los locales, que hubiese como un orden.", "p1": 7}, {"t": "En comparación a los shopping de Córdoba me parece que está muy bien", "p1": 9}, {"t": "En la atención al cliente en algunos noticias en los locales de ropa", "p1": 10}, {"t": "Mas gastronómicas comida sana y más variedad y climatización", "p1": 8}, {"t": "Ahora está re bien, el parking afuera es complicado", "p1": 8}, {"t": "Me alegro que hayan arreglado el ascensor", "p1": 10}, {"t": "Hay poca variedad de sitios para comer", "p1": 10}, {"t": "Que mejorarán la limpieza de elos baños", "p1": 8}, {"t": "La atención depende de cada local", "p1": 10}, {"t": "La atención que fuesen más amables todos, que haya más empatía. (Cheeky)", "p1": 10}, {"t": "Agregar una escalera mecánica que baje", "p1": 10}, {"t": "En gastronomía no han sido muy atentos", "p1": 8}, {"t": "La limpieza de los baños", "p1": 10}, {"t": "Capaz publicar más en redes sociales saber las cosas, no me salen", "p1": 8}, {"t": "La escalera se rompe constantemente", "p1": 9}, {"t": "A veces paso y están limpiando el baño, varios al mismo tiempo", "p1": 10}, {"t": "Vengo solo para compras puntuales. No me gustan los lugares cerrados", "p1": 8}, {"t": "Por ahí las promos bancarios. Tener con otros bancos. Más locales de ropa de hombre para adolescentes.", "p1": 8}, {"t": "A veces la escalera mecánica no anda por varios días.", "p1": 10}, {"t": "Las escaleras mecánicas que están rotas o fuera de servicio. Es el único pero que pondria", "p1": 9}, {"t": "Nos pasó en spy en 4 oportunidades de venir a comprar, olvidarán sacar las alarmas y al regresar para que las retiraran nos trataran mal. Nunca más regresamos", "p1": 9}, {"t": "Los baños a veces no están limpios y mas promociones", "p1": 8}, {"t": "Primera vez que vengo me recomendaron que pasara porque había un todomoda y vine.", "p1": 7}, {"t": "Tener más info del cine (no nos sigue en redes)", "p1": 8}, {"t": "Ahora en nada, antes no había banquitos y ahora hay", "p1": 8}, {"t": "Me gusta que hayan sitios donde sentarse, antes solo se podía ir a un café para sentarse", "p1": 10}, {"t": "El horario. Cierran muy temprano", "p1": 8}, {"t": "Que cierren más tarde. Al menos a las 9. Una hora más.", "p1": 9}, {"t": "Vengo porque está en un lugar cómodo y que para lo necesario tiene todo. Sería bueno que de acuerdo a la época o a la venta los puestos del cine sean numerados. Al menos los fines de semana o las vacaciones de invierno", "p1": 10}, {"t": "No soy de venir a los shopping, solo vengo a hacer cosas puntuales", "p1": 9}, {"t": "Mas gastronomía. Opciones más relevantes", "p1": 8}, {"t": "Nada. Vivo en zona norte y paso siempre que vengo al centro pero no podría venir más.", "p1": 10}, {"t": "Cierra muy temprano las cafeterías y no hay nada para tomar después de salir del cine.", "p1": 10}, {"t": "Más locales en el último piso. Está medio vacío. Más marcas de ropa de hombre", "p1": 8}, {"t": "Creo que falta más personal de seguridad.", "p1": 9}, {"t": "Aunque no sea tan conocido es lindo shopping", "p1": 8}, {"t": "Quizás que hayan propuestas de cervecería o vinoteca con otro horario", "p1": 10}, {"t": "Escalera mecánica que baje. Ahora está mucho más lindo. Cada vez parece más shopping y menos galeria", "p1": 9}, {"t": "A veces me ha pasado que me atiendan mal. Alguna chica que se levanta mal ese día. (Paso por el shopping de camino a una consulta médica)", "p1": 8}, {"t": "Tenía mucho tiempo sin venir y lo encontré mucho más lindo", "p1": 10}, {"t": "Los guardias son poco simpáticos cuando les preguntas algo", "p1": 8}, {"t": "Ahora está muy duro el tema económico. Capaz más promociones ahora hay menos capacidad de compra.", "p1": 8}, {"t": "Traigo a la nena todas las semanas a los jueguitos, pudieran estar mejor", "p1": 10}, {"t": "Arreglaron los ascensores así que si era eso. El horario de estacionamiento en la noche es más restringido que algunos de los locales que quedan abiertos", "p1": 10}, {"t": "Que tenga un horario más amplio en la noche. Cierra muy temprano", "p1": 7}, {"t": "Po", "p1": 10}, {"t": "Capaz que este mas limpio, hoy comimos en Billy Lomitos y estaban las mesas sucias.", "p1": 7}, {"t": "Capaz más opciones de de gastronomia y alguna cafetería de especialidad de moda", "p1": 7}, {"t": "Es chiquito pero tiene todo. Para el centro está bueno. Algun local deportiva además de blast que no siempre tiene realmente artículos deportivos. Tenés que ir a otro", "p1": 10}, {"t": "No sé porque me pusieron banquitos así que estamos contentos con eso. Mas espacios de paso.", "p1": 7}, {"t": "Mejorar el ambiente, algún estímulo sonoro", "p1": 8}, {"t": "Los baños que a v ces hay varios cerrados", "p1": 8}, {"t": "Más lugares comer o tomar algo al paso", "p1": 8}, {"t": "Mas espacios para sentarse y que los baños estén en planta baja", "p1": 9}, {"t": "Es que no soy de venir al shopping (estaba acompañado)", "p1": 7}, {"t": "Que hayan más variedad de locales y más visibilidad para los locales que tienen. No sabía que tenían un blast", "p1": 9}, {"t": "Que el horário fuese hasta las 9pm", "p1": 9}, {"t": "Venimos solo a comer normalmente. Falta un mostaza", "p1": 8}, {"t": "Si tuviera más tiendas conocidas como marcas", "p1": 7}, {"t": "Por ahí que hayan promociones bancarias, que llamen la atención y así venir", "p1": 8}, {"t": "Mas lugares para comer, opciones vegetarianas", "p1": 8}, {"t": "Que tuvieran cochera", "p1": 10}, {"t": "Capaz más promociones o que tuvieran cine", "p1": 9}, {"t": "No había nadie cuando llegue al local (globolandia)", "p1": 10}, {"t": "No hay señalización. Aunque igual no me gustan los lugares con mucha gente", "p1": 0}, {"t": "Quizás un poco el tema de la circulación siempre tiende a ser un problema, el ascensor o la escalera siempre está fallando. Después el shopping está bien en general", "p1": 9}, {"t": "Que hayan más promociones (tengo Santander y Municipal)", "p1": 8}, {"t": "Tal vez más marcas, como que no tengo mucho para ver aqui", "p1": 7}, {"t": "WiFi, dispenser de agua", "p1": 10}, {"t": "Variedad de marcas quizás algunas que sean accesibles para todos", "p1": 8}, {"t": "WiFi, y hace calor para el clima que hace afuera", "p1": 7}, {"t": "Escaleras mecánicas para bajar y que funcione el ascensor. Horario hasta las 21", "p1": 9}, {"t": "Mas promociones", "p1": 7}, {"t": "Más opciones gastronómicas por ejemplo pizzería .. un lemis", "p1": 7}, {"t": "La atención en los locales, el área de los juegos está desactualizado", "p1": 7}, {"t": "Más opciones de comida, diferentes a los lugares de comida rapida", "p1": 9}, {"t": "Estar mas informada de las ofertas, y que los baños sean más cómodos", "p1": 8}, {"t": "Mas ofertas de marcas diferentes, más promos bancarias recurrentes no sólo en momentos puntuales", "p1": 7}, {"t": "Mas ofertas de locales", "p1": 10}, {"t": "Minisso", "p1": 10}, {"t": "Más locales y que la cochera sea gratis si estás en el shopping", "p1": 6}, {"t": "Que hayan más lugares para comer", "p1": 7}, {"t": "Más eventos copados", "p1": 7}, {"t": "Más promos bancarias", "p1": 8}, {"t": "La atención depende del local. Más marcas como cuesta blanca, ampliar la oferta gastronómica que cerraran más tarde que no fuese comida rápida", "p1": 10}, {"t": "Mas seguridad, por ahí entra gente extraña", "p1": 5}, {"t": "Hay un olor raro estos días. Y que sea gratis la cochera", "p1": 10}];
+const HALLAZGOS = [{"zona": "Accesos y Circulación", "ubic": "Ingreso Rioja", "hallazgo": "Marco de vidriera oxidado, Medianera en mal estado, pared manchada por desague", "estado": "No aprobado (en espera de reforma)", "dias": 117}, {"zona": "Accesos y Circulación", "ubic": "Pasillo Rioja", "hallazgo": "Deterioro en pared ingreso local MA Factory", "estado": "Resuelto", "dias": 0}, {"zona": "Exterior y Estacionamiento", "ubic": "Estacionamiento", "hallazgo": "Piso y paredes en mal estado", "estado": "En proceso", "dias": 117}, {"zona": "Locales Vacíos / En Obra", "ubic": "Pasillo Rioja", "hallazgo": "Cerramientos locales en mudanza / remodelación / obra", "estado": "Resuelto", "dias": 0}, {"zona": "Accesos y Circulación", "ubic": "pasillo Rioja", "hallazgo": "Ingreso local Shams marco roto", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "Todos los pisos", "hallazgo": "Puertas de Servicio con vidrios en mal estado, muy pesadas.", "estado": "En proceso", "dias": 117}, {"zona": "Accesos y Circulación", "ubic": "Frente a Samsumg pasillo Córdoba", "hallazgo": "Columnas revestidas de madera con reparaciones evidentes, otro color y sin lijar", "estado": "En proceso", "dias": 117}, {"zona": "Servicios e Instalaciones", "ubic": "Escalera cañón córdoba", "hallazgo": "Escaleras con las paredes sucias y manchadas", "estado": "Resuelto", "dias": 0}, {"zona": "Ambientación y Experiencia Sensorial", "ubic": "Todo el shopping", "hallazgo": "Tachos de basura desactualizados con sistema poco conveniente", "estado": "Sin definir", "dias": 117}, {"zona": "Ambientación y Experiencia Sensorial", "ubic": "pasillo Córdoba", "hallazgo": "Ingreso Cheeky, foco quemado", "estado": "Resuelto", "dias": 0}, {"zona": "Ambientación y Experiencia Sensorial", "ubic": "pasillo Córdoba", "hallazgo": "Restos de materiales por decoración anterior", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "Córdoba", "hallazgo": "Escaleras PB a 1er piso  detenida", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "roca", "hallazgo": "baños M (bateria piso 1) Sin tapa los inodoros. Un cubículo clausurado", "estado": "No aprobado (en espera de reforma)", "dias": 117}, {"zona": "Servicios e Instalaciones", "ubic": "rioja", "hallazgo": "baños M (batería piso 2) Sin tapa los inodoros. 1 cubiculo clausurado.", "estado": "No aprobado (en espera de reforma)", "dias": 117}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba", "hallazgo": "baños M (batería piso 2)", "estado": "Pendiente", "dias": 117}, {"zona": "Servicios e Instalaciones", "ubic": "cine", "hallazgo": "baños M (bateria piso 1)", "estado": "Pendiente", "dias": 117}, {"zona": "Locales Vacíos / En Obra", "ubic": "gondola Lagom", "hallazgo": "Techo Lagom. Espacio vacío", "estado": "Sin definir", "dias": 117}, {"zona": "Seguridad y Personal", "ubic": "shopping", "hallazgo": "Cajas de apaga fuegos. Aspecto antiguo, cajas con filos", "estado": "Pendiente", "dias": 117}, {"zona": "Accesos y Circulación", "ubic": "Córdoba", "hallazgo": "Puerta Mc Donald. Muy sucia", "estado": "En proceso", "dias": 117}, {"zona": "Servicios e Instalaciones", "ubic": "córdoba", "hallazgo": "Vidrio ascensor ingreso córdoba sucios, pared que recubre el asecensor", "estado": "Pendiente", "dias": 117}, {"zona": "Accesos y Circulación", "ubic": "Rioja", "hallazgo": "Ingreso rioja, marmol sucio y marco de puerta", "estado": "En proceso", "dias": 82}, {"zona": "Accesos y Circulación", "ubic": "Rioja", "hallazgo": "Columna ingreso MA Factory", "estado": "Resuelto", "dias": 0}, {"zona": "Accesos y Circulación", "ubic": "Rioja", "hallazgo": "columna donde se encuentra luz de emergencia (frente a mimo)", "estado": "Pendiente", "dias": 82}, {"zona": "Ambientación y Experiencia Sensorial", "ubic": "Rioja", "hallazgo": "Hilera de luces apagada. ¿Funciona? porqué no se encienden?", "estado": "Resuelto", "dias": 0}, {"zona": "Señalética y Comunicación Visual", "ubic": "Todos los pisos", "hallazgo": "Mapas desactualizados ascensor y los 3 pisos", "estado": "Pendiente", "dias": 82}, {"zona": "Accesos y Circulación", "ubic": "córdoba", "hallazgo": "Marco inferior góndola Juleriaque sucio", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "Todos los pisos", "hallazgo": "Muchas salidas de ductos y AA sucios", "estado": "En proceso", "dias": 82}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba", "hallazgo": "Pared XL tapa de tablero  pared sucia", "estado": "Resuelto", "dias": 0}, {"zona": "Seguridad y Personal", "ubic": "cordoba", "hallazgo": "Pintura hidrantes", "estado": "Pendiente", "dias": 82}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba piso 1", "hallazgo": "Rejilla baja silueta a lado de starbuck sucia", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba piso 1", "hallazgo": "cielo raso alrededor de rejilla ventilación frente a Grisino, humedad a la vista", "estado": "En proceso", "dias": 82}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba piso 1", "hallazgo": "Vigas escaleras del piso 1 al piso 2 sucias", "estado": "Pendiente", "dias": 82}, {"zona": "Accesos y Circulación", "ubic": "corodoba piso 1 y piso 2", "hallazgo": "Columnas revestidas de madera, sucias en el borde y parte de la pintura sucia", "estado": "Pendiente", "dias": 82}, {"zona": "Accesos y Circulación", "ubic": "Rioja", "hallazgo": "Techo frente a missis rouge, dedos marcados al lado del foco", "estado": "Pendiente", "dias": 82}, {"zona": "Ambientación y Experiencia Sensorial", "ubic": "Cordoba piso 2", "hallazgo": "Canteros de plantas segundo piso, sucios. Cables al lado de uno de los canteros expuestos y a la vista.", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "córdoba piso 2", "hallazgo": "Rejilla suelta frente a KFC", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "córdba piso 2", "hallazgo": "Techo de Pelokitos con humedad", "estado": "En proceso", "dias": 47}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba piso 2", "hallazgo": "Techo de KFC manchado", "estado": "Pendiente", "dias": 47}, {"zona": "Servicios e Instalaciones", "ubic": "cordoba piso 2", "hallazgo": "Salida del ascensor cielo raso", "estado": "Pendiente", "dias": 47}, {"zona": "Accesos y Circulación", "ubic": "cordoba piso 2", "hallazgo": "pasillos piso 2", "estado": "Pendiente", "dias": 47}, {"zona": "Accesos y Circulación", "ubic": "Piso 1", "hallazgo": "Puerta de mc Donalds", "estado": "Pendiente", "dias": 47}, {"zona": "Servicios e Instalaciones", "ubic": "Piso 1", "hallazgo": "Rejilla Mc Donalds", "estado": "Resuelto", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "ingreso córdoba", "hallazgo": "puertas automáticas nuevas sin vinilo de seguridad", "estado": "Pendiente", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "roca pb", "hallazgo": "caja de luz MUY sucia", "estado": "Pendiente", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "rioja pb", "hallazgo": "piso con sticker de señalización de góndola desproliijo", "estado": "Pendiente", "dias": 0}, {"zona": "Señalética y Comunicación Visual", "ubic": "baños cine", "hallazgo": "sticker de sigui en mal estado", "estado": "Pendiente", "dias": 0}, {"zona": "Señalética y Comunicación Visual", "ubic": "escaleras full sail al piso 2", "hallazgo": "vidrio desnudo, aspecto descuidado", "estado": "Pendiente", "dias": 0}, {"zona": "Servicios e Instalaciones", "ubic": "escalera mecanica piso 2", "hallazgo": "Chapa inestable al finalizar escalera", "estado": "Pendiente", "dias": 0}, {"zona": "Señalética y Comunicación Visual", "ubic": "baños de colores hombres", "hallazgo": "vinilo en mal estado", "estado": "Pendiente", "dias": 0}];
+const SIGUI = [{"tipo": "Objetos perdidos", "cant": 6, "detalle": "Consultas por pertenencias olvidadas en el shopping o locales."}, {"tipo": "Baños", "cant": 2, "detalle": "Colas en los tres baños habilitados por clausura y limpieza simultánea de los otros dos."}, {"tipo": "Cadetería", "cant": 1, "detalle": "Cadetes en la puerta del shopping, dificultando el estacionamiento de clientes."}, {"tipo": "Error en compra", "cant": 1, "detalle": "Error en una compra realizada en un local del shopping."}];
+const VACACIONES = [{"seg": "Menores de 19 años", "y2024": 11978, "y2025": 8499, "y2026": 7113}, {"seg": "Femenino", "y2024": 102202, "y2025": 88812, "y2026": 84439}, {"seg": "Masculino", "y2024": 60518, "y2025": 58684, "y2026": 66163}];
+
+const TEMAS = {
+  'Variedad-Oferta': 20, 'Limpieza': 19, 'Servicio': 13, 'Mantenimiento': 11,
+  'Precio': 10, 'Variedad-PercepcionCompleto': 9, 'Estacionamiento': 4,
+  'Variedad-ChicoPeroCompleto': 3, 'Seguridad': 2
+};
+const TEMAS_ENCUESTA = {'Variedad':50,'Limpieza':26,'Servicio':20,'Mantenimiento':20,'Estacionamiento':3,'Precio':1};
+
+function showPage(id, ev) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (ev) ev.target.classList.add('active');
+}
+
+function openModal(id){ document.getElementById(id).classList.add('active'); if(id==='modal-resenas') renderResenas('Todos'); if(id==='modal-encuesta') renderEncuesta(); if(id==='modal-sigui') renderSigui(); if(id==='modal-hallazgos') renderHallazgos(); if(id==='modal-vacaciones') renderVacaciones(); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+function sentClass(s){ if(s==='Positivo') return 'pos'; if(s==='Negativo') return 'neg'; return 'neu'; }
+
+function renderResenas(filter){
+  const filters = document.getElementById('resenas-filters');
+  filters.innerHTML='';
+  ['Todos',...Object.keys(TEMAS)].forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'mf-btn' + (t===filter?' active':'');
+    b.textContent = t==='Todos' ? 'Todos (140)' : t.replace('Variedad-','V. ') + ' (' + TEMAS[t] + ')';
+    b.onclick = ()=>renderResenas(t);
+    filters.appendChild(b);
+  });
+  const list = document.getElementById('resenas-list');
+  list.innerHTML='';
+  const filtered = RESENAS.filter(r => filter==='Todos' || (r.tm && r.tm.includes(filter)));
+  if(filtered.length===0){ list.innerHTML = '<div class="m-empty">Sin reseñas para este filtro.</div>'; return; }
+  filtered.forEach(r=>{
+    const div = document.createElement('div');
+    div.className='m-item';
+    div.innerHTML = '<div class="m-item-head"><span>'+r.a+' · '+r.f+'</span><span>'+r.s+'★ <span class="m-tag '+sentClass(r.sn)+'">'+r.sn+'</span>'+(r.ev?' <span class="m-tag">Evento</span>':'')+'</span></div>'+
+      '<div class="m-item-text">'+r.t+'</div>';
+    list.appendChild(div);
+  });
+}
+
+function renderEncuesta(){
+  const list = document.getElementById('encuesta-list');
+  list.innerHTML='';
+  ENCUESTA.forEach(c=>{
+    const div = document.createElement('div');
+    div.className='m-item';
+    div.innerHTML = '<div class="m-item-head"><span>Recomendación: '+c.p1+'/10</span></div><div class="m-item-text">'+c.t+'</div>';
+    list.appendChild(div);
+  });
+}
+
+function renderSigui(){
+  const list = document.getElementById('sigui-list');
+  list.innerHTML='';
+  SIGUI.forEach(s=>{
+    const div = document.createElement('div');
+    div.className='m-item';
+    div.innerHTML = '<div class="m-item-head"><span>'+s.tipo+'</span><span>'+s.cant+'</span></div><div class="m-item-text">'+s.detalle+'</div>';
+    list.appendChild(div);
+  });
+}
+
+function severidad(h){
+  if(h.estado==='Resuelto') return {label:'Resuelto', c:'resuelto'};
+  if(h.estado.includes('No aprobado') || h.dias>=90) return {label:'Alta', c:'alta'};
+  if(h.dias>=30) return {label:'Media', c:'media'};
+  return {label:'Baja', c:'baja'};
+}
+
+function renderHallazgos(){
+  const zonas = {};
+  HALLAZGOS.forEach(h=>{ zonas[h.zona] = zonas[h.zona]||[]; zonas[h.zona].push(h); });
+  const order = Object.keys(zonas).sort((a,b)=>{
+    const score = z => zonas[z].filter(h=>severidad(h).label==='Alta').length*10 + zonas[z].filter(h=>severidad(h).label==='Media').length;
+    return score(b)-score(a);
+  });
+  const acc = document.getElementById('hallazgos-acc');
+  acc.innerHTML='';
+  order.forEach(zona=>{
+    const items = zonas[zona];
+    const altas = items.filter(h=>severidad(h).label==='Alta').length;
+    const abiertos = items.filter(h=>h.estado!=='Resuelto').length;
+    const wrap = document.createElement('div');
+    wrap.className='acc-wrap';
+    const head = document.createElement('button');
+    head.className='acc-head';
+    head.innerHTML = '<span>'+zona+'</span><span>'+(altas>0?'<span class="m-tag neg">'+altas+' alta'+(altas>1?'s':'')+'</span> ':'')+abiertos+'/'+items.length+' abiertos</span>';
+    const body = document.createElement('div');
+    body.className='acc-body';
+    items.sort((a,b)=>b.dias-a.dias).forEach(h=>{
+      const s = severidad(h);
+      const row = document.createElement('div');
+      row.className='acc-row';
+      row.innerHTML = '<div><div style="font-weight:600;">'+h.ubic+'</div><div style="color:var(--gris-medio);font-size:11px;">'+h.hallazgo+'</div></div>'+
+        '<div style="text-align:right;white-space:nowrap;"><span class="m-tag sev-'+s.c+'">'+s.label+'</span><div style="font-size:11px;color:#999;margin-top:3px;">'+(h.dias>0?h.dias+' días':'nuevo')+'</div></div>';
+      body.appendChild(row);
+    });
+    head.onclick = ()=>{ body.style.maxHeight = body.style.maxHeight ? '' : body.scrollHeight+'px'; };
+    wrap.appendChild(head); wrap.appendChild(body); acc.appendChild(wrap);
+  });
+}
+
+function renderVacaciones(){
+  const box = document.getElementById('vacaciones-table');
+  let rows = '<table style="width:100%;font-size:12px;border-collapse:collapse;"><tr style="text-align:left;color:var(--gris-medio);"><th style="padding:6px 0;">Segmento</th><th>2024</th><th>2025</th><th>2026</th><th>Var. 24→26</th></tr>';
+  VACACIONES.forEach(v=>{
+    const varpct = ((v.y2026-v.y2024)/v.y2024*100).toFixed(1);
+    rows += '<tr style="border-top:1px solid var(--gris-borde);"><td style="padding:8px 0;">'+v.seg+'</td><td>'+v.y2024.toLocaleString()+'</td><td>'+v.y2025.toLocaleString()+'</td><td>'+v.y2026.toLocaleString()+'</td><td style="color:'+(varpct<0?'#C62828':'#2E7D32')+';font-weight:700;">'+(varpct>0?'+':'')+varpct+'%</td></tr>';
+  });
+  rows += '</table>';
+  box.innerHTML = rows;
+}
+
+// BAR CHART TEMAS (voz del visitante, resumen inline)
+(function(){
+  const wrap = document.getElementById('bar-temas');
+  const max = Math.max(...Object.values(TEMAS));
+  Object.entries(TEMAS).forEach(([tema,val])=>{
+    const row = document.createElement('div');
+    row.className='bar-row';
+    row.onclick = ()=>{ openModal('modal-resenas'); setTimeout(()=>renderResenas(tema),50); };
+    row.innerHTML = '<div class="bar-label">'+tema.replace('Variedad-','V. ')+'</div><div class="bar-track"><div class="bar-fill '+(tema.startsWith('Variedad')?'bar-highlight':'bar-normal')+'" style="width:'+(val/max*100)+'%;"><span class="bar-val">'+val+'</span></div></div>';
+    wrap.appendChild(row);
+  });
+})();
+</script>
+</body>
+</html>
